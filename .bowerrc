@@ -1,0 +1,4 @@
+{
+  "proxy": "http://proxy.kuins.net:8080/",
+  "https-proxy": "http://proxy.kuins.net:8080/"
+}
