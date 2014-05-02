@@ -15,37 +15,39 @@ function latToY(lat) {
 }
 
 
+var lonW = 141;
+var lonE = 147;
+var latS = 35;
+var latN = 43;
+var margin = 0.5;
+var xRange = {
+  min: lonToX(lonW) - margin,
+  max: lonToX(lonE) + margin
+};
+var yRange = {
+  min: latToY(latS) - margin,
+  max: latToY(latN) + margin
+};
+console.log(xRange, yRange);
+var width = xRange.max - xRange.min;
+var height = yRange.max - yRange.min;
+
+var camerax = (xRange.max + xRange.min)/2,
+    cameray = (yRange.max + yRange.min)/2;
+var camera = new THREE.OrthographicCamera(width/-2, width/2, height/2, height/-2, 1, 2);
+camera.position.set(camerax, cameray, 1);
+camera.lookAt(new THREE.Vector3(camerax, cameray, 0));
+
+renderer = new THREE.WebGLRenderer();
+renderer.setClearColor(0xffffff, 1.0);
+renderer.setSize(600, 800);
+document.body.appendChild(renderer.domElement);
+var scene = new THREE.Scene();
+
+
 function drawMap(lon, lat, u0, v0, vortexCore) {
   var xs = lon.map(lonToX);
   var ys = lat.map(latToY);
-  var lonW = 141;
-  var lonE = 147;
-  var latS = 35;
-  var latN = 43;
-  var margin = 0.5;
-  var xRange = {
-    min: lonToX(lonW) - margin,
-    max: lonToX(lonE) + margin
-  };
-  var yRange = {
-    min: latToY(latS) - margin,
-    max: latToY(latN) + margin
-  };
-  var width = xRange.max - xRange.min;
-  var height = yRange.max - yRange.min;
-
-  var camerax = (xRange.max + xRange.min)/2,
-      cameray = (yRange.max + yRange.min)/2;
-  var camera = new THREE.OrthographicCamera(width/-2, width/2, height/2, height/-2, 1, 2);
-  console.log(xRange, yRange);
-  camera.position.set(camerax, cameray, 1);
-  camera.lookAt(new THREE.Vector3(camerax, cameray, 0));
-
-  renderer = new THREE.WebGLRenderer();
-  renderer.setClearColor(0xffffff, 1.0);
-  renderer.setSize(600, 800);
-  document.body.appendChild(renderer.domElement);
-  scene = new THREE.Scene();
 
   (function() {
     ys.forEach(function(y, i) {
@@ -87,4 +89,16 @@ function drawMap(lon, lat, u0, v0, vortexCore) {
   })();
 
   renderer.render(scene, camera);
+}
+
+function drawStreamline(points) {
+  var material = new THREE.LineBasicMaterial({
+    color: 0x00ff00
+  });
+  var geometry = new THREE.Geometry();
+  points.forEach(function(point) {
+    geometry.vertices.push(new THREE.Vector3(point[0], point[1], 0));
+  });
+  var line = new THREE.Line(geometry, material);
+  scene.add(line);
 }

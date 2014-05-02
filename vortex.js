@@ -125,6 +125,16 @@ $(function() {
      // console.log(vlabel);// TODO
     //console.log(u, v, w);
     
+      var points = (function() {
+        var points = [];
+        for (var i = 0, n = 100; i < n; ++i) {
+          var x = Math.random() * 6 + 227;
+          var y = Math.random() * 8 + 154;
+          points.push([x, y]);
+        }
+        return points
+      })();
+      drawStreamline(points)
       drawMap(u[0][4], u[0][3], u[0][0][0][0], v[0][0][0][0], vorcan[0]);
     });
 });
