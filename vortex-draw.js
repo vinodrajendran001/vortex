@@ -34,7 +34,7 @@ var height = yRange.max - yRange.min;
 
 var camerax = (xRange.max + xRange.min)/2,
     cameray = (yRange.max + yRange.min)/2;
-var camera = new THREE.OrthographicCamera(width/-2, width/2, height/2, height/-2, 1, 2);
+var camera = new THREE.OrthographicCamera(width/-2, width/2, height/2, height/-2, 1, 10);
 camera.position.set(camerax, cameray, 1);
 camera.lookAt(new THREE.Vector3(camerax, cameray, 0));
 
@@ -92,13 +92,31 @@ function drawMap(lon, lat, u0, v0, vortexCore) {
 }
 
 function drawStreamline(points) {
-  var material = new THREE.LineBasicMaterial({
-    color: 0xff0000
-  });
-  var geometry = new THREE.Geometry();
+  var vPoints = [];
   points.forEach(function(point) {
-    geometry.vertices.push(new THREE.Vector3(lonToX(point[0]), latToY(point[1]), 0));
+    vPoints.push(new THREE.Vector3(lonToX(point[0]), latToY(point[1]), -2));
   });
-  var line = new THREE.Line(geometry, material);
-  scene.add(line);
+  var splineCurve = new THREE.SplineCurve3(vPoints);
+  var extrudeSettings = {
+    steps: 500,
+    bevelEnabled: false,
+    extrudePath: splineCurve
+  };
+
+  var pts = [],
+      numPts = 10;
+  for (var j = 0; j < numPts * 2; j++) {
+    var a = j / numPts * Math.PI;
+    var radius = 0.005;
+    pts.push(new THREE.Vector2(radius * Math.cos(a), radius * Math.sin(a)));
+  }
+  var shape = new THREE.Shape(pts);
+
+  var geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+  var material = new THREE.MeshLambertMaterial({
+    color: 0xffffff,
+    wireframe: false
+  });
+  mesh = new THREE.Mesh(geometry, material);
+  scene.add(mesh);
 }
