@@ -93,11 +93,11 @@ function drawMap(lon, lat, u0, v0, vortexCore) {
 
 function drawStreamline(points) {
   var material = new THREE.LineBasicMaterial({
-    color: 0x00ff00
+    color: 0xff0000
   });
   var geometry = new THREE.Geometry();
   points.forEach(function(point) {
-    geometry.vertices.push(new THREE.Vector3(point[0], point[1], 0));
+    geometry.vertices.push(new THREE.Vector3(lonToX(point[0]), latToY(point[1]), 0));
   });
   var line = new THREE.Line(geometry, material);
   scene.add(line);

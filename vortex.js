@@ -274,7 +274,7 @@ $(function() {
     
     
     
-    /*
+    */
 
     
     
@@ -283,7 +283,7 @@ $(function() {
     
     
     //drawStreamline(streamline(229, 156, 100, 0.1));
-    drawStreamline(streamline(144,38, 10, 0.01));// x=143 e y=38 n
+    drawStreamline(streamline(144,38, 20, 0.01));// x=143 e y=38 n
     //drawMap(u[0][4], u[0][3], u[0][0][0][0], v[0][0][0][0], vorcan[1]);
     drawMap(u[0][4], u[0][3], u[0][0][0][0], v[0][0][0][0], vor[1]);
     });
