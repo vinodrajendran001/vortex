@@ -1,19 +1,28 @@
 var IGNORE_VALUE = -999000000;
 
+var _r = 128 / Math.PI;
+
+function sinh (rad) {
+  return ( Math.exp(rad) + Math.exp(-rad) ) / 2;
+}
 
 function lonToX(lon) {
-  var _r = 128 / Math.PI;
   var lonRad = Math.PI / 180 * lon;
   return _r * (lonRad + Math.PI);
 }
 
-
 function latToY(lat) {
-  var _r = 128 / Math.PI;
   var latRad = Math.PI / 180 * lat;
   return _r / 2 * Math.log((1.0 + Math.sin(latRad)) / (1.0 - Math.sin(latRad))) + 128;
 }
 
+function xToLon(x) {
+  return ( x / _r - Math.PI ) * 180 / Math.PI;
+}
+
+function yToLat(y) {
+  return Math.atan( sinh( (128 - y) / _r ) ) * 180 / Math.PI;
+}
 
 var lonW = 141;
 var lonE = 147;
@@ -131,4 +140,6 @@ renderer.domElement.addEventListener('click', function(e) {
   var raycaster = projector.pickingRay(mv, camera);
   var pos = raycaster.ray.intersectPlane(planeZ);
   console.log("x: " + pos.x + ", y: " + pos.y);
+
+  drawStreamline(streamline(xToLon(pos.x), yToLat(pos.y), 20, 0.01));
 }, false);
