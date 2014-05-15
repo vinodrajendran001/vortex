@@ -120,3 +120,15 @@ function drawStreamline(points) {
   mesh = new THREE.Mesh(geometry, material);
   scene.add(mesh);
 }
+
+var projector = new THREE.Projector();
+var planeZ = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
+renderer.domElement.addEventListener('click', function(e) {
+  var mv = new THREE.Vector3(
+      (event.clientX / window.innerWidth) * 2 - 1,
+      -(event.clientY / window.innerHeight) * 2 + 1,
+      0.5 );
+  var raycaster = projector.pickingRay(mv, camera);
+  var pos = raycaster.ray.intersectPlane(planeZ);
+  console.log("x: " + pos.x + ", y: " + pos.y);
+}, false);
