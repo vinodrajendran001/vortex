@@ -6,22 +6,36 @@ function sinh (rad) {
   return ( Math.exp(rad) + Math.exp(-rad) ) / 2;
 }
 
+function tanh (rad) {
+  return ( Math.exp(rad) - Math.exp(-rad) ) / ( Math.exp(rad) + Math.exp(-rad) );
+}
+
+function angToRad (ang) {
+  return ang * Math.PI / 180;
+}
+
+function radToAng (rad) {
+  return rad * 180 / Math.PI;
+}
+
 function lonToX(lon) {
-  var lonRad = Math.PI / 180 * lon;
+  var lonRad = angToRad(lon);
   return _r * (lonRad + Math.PI);
+
 }
 
 function latToY(lat) {
-  var latRad = Math.PI / 180 * lat;
-  return _r / 2 * Math.log((1.0 + Math.sin(latRad)) / (1.0 - Math.sin(latRad))) + 128;
+  var latRad = angToRad(lat);
+  return - _r / 2 * Math.log((1.0 + Math.sin(latRad)) / (1.0 - Math.sin(latRad))) + 128;
 }
 
 function xToLon(x) {
-  return ( x / _r - Math.PI ) * 180 / Math.PI;
+  return radToAng( x / _r - Math.PI );
 }
 
 function yToLat(y) {
-  return Math.atan( sinh( (128 - y) / _r ) ) * 180 / Math.PI;
+  var E = Math.exp( 2 / _r * (128 - y) );
+  return radToAng(Math.asin(tanh( (128-y) / _r )));
 }
 
 var lonW = 141;
@@ -63,7 +77,7 @@ function drawMap(lon, lat, u0, v0, vortexCore) {
       xs.forEach(function(x, j) {
         if (u0[i][j] != IGNORE_VALUE && v0[i][j] != IGNORE_VALUE) {
           var u0ij = u0[i][j];
-          var v0ij = v0[i][j];
+          var v0ij = -v0[i][j];
           var norm = Math.sqrt(u0ij * u0ij + v0ij * v0ij);
           var arrow = new THREE.ArrowHelper(
             new THREE.Vector3(u0ij / norm, v0ij / norm, 0),
@@ -97,7 +111,8 @@ function drawMap(lon, lat, u0, v0, vortexCore) {
     scene.add(new THREE.ParticleSystem(geometry, material));
   })();
 
-  renderer.render(scene, camera);
+  animate();
+
 }
 
 function drawStreamline(points) {
@@ -130,16 +145,14 @@ function drawStreamline(points) {
   scene.add(mesh);
 }
 
-var projector = new THREE.Projector();
-var planeZ = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
-renderer.domElement.addEventListener('click', function(e) {
-  var mv = new THREE.Vector3(
-      (event.clientX / window.innerWidth) * 2 - 1,
-      -(event.clientY / window.innerHeight) * 2 + 1,
-      0.5 );
-  var raycaster = projector.pickingRay(mv, camera);
-  var pos = raycaster.ray.intersectPlane(planeZ);
-  console.log("x: " + pos.x + ", y: " + pos.y);
+function animate() {
+    requestAnimationFrame(animate);
+    renderer.render(scene, camera);
+}
 
-  drawStreamline(streamline(xToLon(pos.x), yToLat(pos.y), 20, 0.01));
+
+renderer.domElement.addEventListener('click', function(e) {
+  var pickX = (xRange.max-xRange.min) * e.offsetX / 600 + xRange.min;
+  var pickY = yRange.max - (yRange.max-yRange.min) * e.offsetY / 800;
+  drawStreamline(streamline(xToLon(pickX), yToLat(pickY), 20, 0.01));
 }, false);
