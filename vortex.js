@@ -15,7 +15,7 @@ $(function() {
     var vlabel = []; //='A','B','C',or'D'
     var vorcan = []; //if is set to be vortice candidate,true for this (z,y,x)（index）
     var vor = []; //if is set to be vortice\,true for this (z,y,x)
-    var pointsofvor = [] //contain exact point of vor like[[x0,y0,z0],...]
+    var pointsofvor = []; //contain exact point of vor like[[x0,y0,z0],...]
       //function of initialization
     var inil33matrix = function(x) {
         for (h = 0; h <= 30; h++) {
@@ -27,7 +27,7 @@ $(function() {
             }
           }
         }
-      }
+      };
       //initialization of matrix
     inil33matrix(vor); //if is vortice candidate,true for this (z,y,x),inil=false
     inil33matrix(vlabel);
@@ -66,7 +66,7 @@ $(function() {
               B: 0,
               C: 0,
               D: 0
-            }
+            };
             var num = 0;
             for (var i1 = -1; i1 <= 1; i1 = i1 + 2) {
               for (var j1 = -1; j1 <= 1; j1 = j1 + 2) {
@@ -76,7 +76,7 @@ $(function() {
                     break;
                   case 'B':
                     counts.B++;
-                    break
+                    break;
                   case 'C':
                     counts.C++;
                     break;
@@ -206,7 +206,7 @@ $(function() {
       var vx = 0.25 * (1 - p) * (1 - q) * u[0][0][0][1][y0][x0] + 0.25 * (1 + p) * (1 - q) * u[0][0][0][1][y1][x1] + 0.25 * (1 + p) * (1 + q) * u[0][0][0][1][y2][x2] + 0.25 * (1 - p) * (1 + q) * u[0][0][0][1][y3][x3];
       var vy = 0.25 * (1 - p) * (1 - q) * v[0][0][0][1][y0][x0] + 0.25 * (1 + p) * (1 - q) * v[0][0][0][1][y1][x1] + 0.25 * (1 + p) * (1 + q) * v[0][0][0][1][y2][x2] + 0.25 * (1 - p) * (1 + q) * v[0][0][0][1][y3][x3];
       return [vx, vy];
-    }
+    };
     streamline = function(x0, y0, n, deltaT) { //141<=x<=147,35<=y<=43
       var k1 = [],
         k2 = [],
@@ -233,7 +233,7 @@ $(function() {
       }
       return (points);
       //console.log("point:"+points);
-    }
+    };
     drawStreamline(streamline(144, 38, 20, 0.01));
     drawMap(u[0][4], u[0][3], u[0][0][0][0], v[0][0][0][0], vor[1]);
     //goest to 3D
@@ -270,7 +270,7 @@ $(function() {
 
 */
       var x, x0, y, y0, z, z0, z1, z_index, p, q, r;
-      var z_index = -1;
+      z_index = -1;
       x = (xx - 141) * 10;
       y = (yy - 35) * 10;
       z = zz;
@@ -328,13 +328,13 @@ $(function() {
       var vx = 0,
         vy = 0,
         vz = 0;
-      for (var i = 0; i < pk.length; i++) {
+      for (i = 0; i < pk.length; i++) {
         vx += 0.125 * (1 + pk[i] * p) * (1 + qk[i] * q) * (1 + rk[i] * r) * sx[i];
       }
-      for (var i = 0; i < pk.length; i++) {
+      for (i = 0; i < pk.length; i++) {
         vy += 0.125 * (1 + pk[i] * p) * (1 + qk[i] * q) * (1 + rk[i] * r) * sy[i];
       }
-      for (var i = 0; i < pk.length; i++) {
+      for (i = 0; i < pk.length; i++) {
         vz += 0.125 * (1 + pk[i] * p) * (1 + qk[i] * q) * (1 + rk[i] * r) * sz[i];
       }
       //console.log(vx,vy,vz);
@@ -378,7 +378,7 @@ $(function() {
       }
       return (points);
       //console.log("point:"+points);
-    }
+    };
     // pointsofvor = getpointofvor(vor);
     // console.log(pointsofvor[4000]);
     // console.log(threedstreamline(pointsofvor[4000][0], pointsofvor[4000][1], pointsofvor[4000][2] - 1, 1000000, 0.02)); //takes time to compute 10^6
