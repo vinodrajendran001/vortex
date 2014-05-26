@@ -5,7 +5,7 @@ function load(url) {
   });
   return deferred;
 }
-var interpolate, streamline;
+var interpolate, streamline, threedinterpolate, threedstreamline;
 $(function() {
   $.when(load('u.dods'), load('v.dods'), load('w.dods')).done(function(u, v, w) {
     var h; //z index:0~30
@@ -233,12 +233,12 @@ $(function() {
       }
       return (points);
     };
-    drawStreamline(streamline(144, 38, 20, 0.01));
+    // drawStreamline(streamline(144, 38, 20, 0.01));
     drawMap(u[0][4], u[0][3], u[0][0][0][0], v[0][0][0][0], vor[1]);
 
     //goest to 3D
     //notice first about z , u[0][2]+([0] to [30]) contains the depth of z for different indoex
-    var threedinterpolate = function(xx, yy, zz) {
+    threedinterpolate = function(xx, yy, zz) {
       // 0<=x<=61,0<=y<=81,0<=z_index<=30
       // 141<=xx<=147,35<=yy<=43
       // 0.5[0]<zz<820[30]
@@ -328,7 +328,7 @@ $(function() {
     };
     //threedinterpolate(143,38,60);
 
-    var threedstreamline = function(x0, y0, z0, n, deltaT) {
+    threedstreamline = function(x0, y0, z0, n, deltaT) {
       //141<=x<=147,35<=y<=43,0<=z_index<=30,0.5[0]<zz<820[30]
       var k1 = [],
         k2 = [],
@@ -360,8 +360,8 @@ $(function() {
       }
       return (points);
     };
-    // pointsofvor = getpointofvor(vor);
-    // console.log(pointsofvor[4000]);
-    // console.log(threedstreamline(pointsofvor[4000][0], pointsofvor[4000][1], pointsofvor[4000][2] - 1, 1000000, 0.02)); //takes time to compute 10^6
+    pointsofvor = getpointofvor(vor);
+    var tmpStreamLine = threedstreamline(pointsofvor[4000][0], pointsofvor[4000][1], pointsofvor[4000][2] - 300, 100, 0.1);
+    draw3DStreamline(tmpStreamLine);
   });
 });

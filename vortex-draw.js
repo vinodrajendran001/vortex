@@ -38,6 +38,8 @@ function yToLat(y) {
   return radToAng(Math.asin(tanh( (128-y) / _r )));
 }
 
+var mouseX, mouseY;
+
 var lonW = 141;
 var lonE = 147;
 var latS = 35;
@@ -57,7 +59,7 @@ var height = yRange.max - yRange.min;
 
 var camerax = (xRange.max + xRange.min)/2,
     cameray = (yRange.max + yRange.min)/2;
-var camera = new THREE.OrthographicCamera(width/-2, width/2, height/2, height/-2, 1, 10);
+var camera = new THREE.OrthographicCamera(width/-2, width/2, height/2, height/-2, 1, 1000);
 camera.position.set(camerax, cameray, 1);
 camera.lookAt(new THREE.Vector3(camerax, cameray, 0));
 
@@ -115,14 +117,14 @@ function drawMap(lon, lat, u0, v0, vortexCore) {
 
 }
 
-function drawStreamline(points) {
+function draw3DStreamline(points) {
   var vPoints = [];
   points.forEach(function(point) {
-    vPoints.push(new THREE.Vector3(lonToX(point[0]), latToY(point[1]), -2));
+    vPoints.push(new THREE.Vector3(lonToX(point[0]), latToY(point[1]), - point[2]));
   });
   var splineCurve = new THREE.SplineCurve3(vPoints);
   var extrudeSettings = {
-    steps: 500,
+    steps: 200,
     bevelEnabled: false,
     extrudePath: splineCurve
   };
@@ -146,13 +148,22 @@ function drawStreamline(points) {
 }
 
 function animate() {
-    requestAnimationFrame(animate);
-    renderer.render(scene, camera);
+  // camera.position.x = camerax + mouseX * 0.005;
+  // camera.position.y = cameray + mouseY * 0.005;
+  camera.lookAt(new THREE.Vector3(camerax, cameray, 0));
+  requestAnimationFrame(animate);
+  renderer.render(scene, camera);
 }
-
 
 renderer.domElement.addEventListener('click', function(e) {
   var pickX = (xRange.max-xRange.min) * e.offsetX / 600 + xRange.min;
   var pickY = yRange.max - (yRange.max-yRange.min) * e.offsetY / 800;
-  drawStreamline(streamline(xToLon(pickX), yToLat(pickY), 20, 0.01));
+  draw3DStreamline(threedstreamline(xToLon(pickX), yToLat(pickY), 10, 20, 0.01)); // z決め打ち
 }, false);
+
+document.addEventListener('mousemove', onDocumentMouseMove, false);
+
+function onDocumentMouseMove(event) {
+  mouseX = event.clientX;
+  mouseY = event.clientY;
+}
