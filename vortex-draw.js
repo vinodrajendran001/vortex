@@ -155,15 +155,19 @@ function animate() {
   renderer.render(scene, camera);
 }
 
+function getZ() {
+  var z = $('input.z-input').val();
+  if (z) return parseInt(z);
+  return 10; // 決め打ち
+}
+
 renderer.domElement.addEventListener('click', function(e) {
   var pickX = (xRange.max-xRange.min) * e.offsetX / 600 + xRange.min;
   var pickY = yRange.max - (yRange.max-yRange.min) * e.offsetY / 800;
-  draw3DStreamline(threedstreamline(xToLon(pickX), yToLat(pickY), 10, 20, 0.01)); // z決め打ち
+  draw3DStreamline(threedstreamline(xToLon(pickX), yToLat(pickY), getZ(), 20, 0.01)); // z決め打ち
 }, false);
 
-document.addEventListener('mousemove', onDocumentMouseMove, false);
-
-function onDocumentMouseMove(event) {
+document.addEventListener('mousemove', function (event) {
   mouseX = event.clientX;
   mouseY = event.clientY;
-}
+}, false);
