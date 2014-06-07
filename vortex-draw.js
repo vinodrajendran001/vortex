@@ -219,16 +219,14 @@ function convertToZ (rawZ, lat) {
 
 $(document).keydown(function (e) {
   if (e.shiftKey) shiftKeyDown = true;
-  console.log(shiftKeyDown);
 });
 $(document).keyup(function (e) {
   shiftKeyDown = false;
-  console.log(shiftKeyDown);
 });
 $(document).click(function (e) {
   if(shiftKeyDown) {
     var pickX = (xRange.max - xRange.min) * e.offsetX / window.innerWidth + xRange.min;
-    var pickY = yRange.max - (yRange.max-yRange.min) * e.offsetY / window.innerHeight;
+    var pickY = yRange.max - (yRange.max - yRange.min) * e.offsetY / window.innerHeight;
     draw3DStreamline(threedstreamline(xToLon(pickX), yToLat(pickY), getZ(), 200, 0.01)); // z決め打ち
   }
 });
