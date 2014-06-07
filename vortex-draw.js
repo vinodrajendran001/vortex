@@ -182,28 +182,20 @@ function drawMap(lon, lat, u0, v0, vortexCore) {
 }
 
 var drawCoastLine = function () {
-  // load gml
-  var gml;
-  $.ajax({
-    url: "coastl_jpn.gml",
-    dataType: "xml",
-    async: false,
-    error: function () { alert('Error loading XML document'); },
-    success: function (data) { gml = data; }
-  });
-
-  // draw coast line
-  var material = new THREE.LineBasicMaterial({ color: 0x34495e });
-  $(gml).find('coastl').each(function() {
-    var posList = $(this).find('posList').text().split(' ');
-    var geometry = new THREE.Geometry();
-    for (var i = 0, len = posList.length; i < len - 1; i += 2) {
-      var vertice = new THREE.Vector3(lonToX(posList[i + 1]), latToY(posList[i]), 0);
-      geometry.vertices.push(vertice);
-    }
-    var line = new THREE.Line(geometry, material);
-    scene.add(line);
-  });
+  d3.json('coastl_jpn.json').on('load', function (data) {
+    var lineMaterial = new THREE.LineBasicMaterial({ color: 0x34495e });
+    data.forEach(function (row) {
+      var geometry = new THREE.Geometry();
+      row.forEach(function (pos) {
+        var x = lonToX(pos[1]);
+        var y = latToY(pos[0]);
+        var vertice = new THREE.Vector3(x, y, 0);
+        geometry.vertices.push(vertice);
+      });
+      var line = new THREE.Line(geometry, lineMaterial);
+      scene.add(line);
+    });
+  }).get();
 };
 
 
