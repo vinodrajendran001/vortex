@@ -225,8 +225,15 @@ $(document).keyup(function (e) {
 });
 $(document).click(function (e) {
   if(shiftKeyDown) {
-    var pickX = (xRange.max - xRange.min) * e.offsetX / window.innerWidth + xRange.min;
-    var pickY = yRange.max - (yRange.max - yRange.min) * e.offsetY / window.innerHeight;
+    if(e.offsetX == undefined) { // for firefox
+      xpos = e.pageX - $('canvas').offset().left;
+      ypos = e.pageY - $('canvas').offset().top;
+    } else {
+      xpos = e.offsetX;
+      ypos = e.offsetY;
+    }
+    var pickX = (xRange.max - xRange.min) * xpos / window.innerWidth + xRange.min;
+    var pickY = yRange.max - (yRange.max - yRange.min) * ypos / window.innerHeight;
     draw3DStreamline(threedstreamline(xToLon(pickX), yToLat(pickY), getZ(), 200, 0.01)); // z決め打ち
   }
 });
