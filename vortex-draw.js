@@ -38,7 +38,7 @@ function yToLat(y) {
   return radToAng(Math.asin(tanh( (128-y) / _r )));
 }
 
-var mouseX, mouseY;
+var mouseX, mouseY, trackball;
 
 var lonW = 141;
 var lonE = 147;
@@ -59,15 +59,74 @@ var height = yRange.max - yRange.min;
 
 var camerax = (xRange.max + xRange.min)/2,
     cameray = (yRange.max + yRange.min)/2;
-var camera = new THREE.OrthographicCamera(width/-2, width/2, height/2, height/-2, 1, 1000);
-camera.position.set(camerax, cameray, 1);
+// var camera = new THREE.OrthographicCamera(- width, width, height,  - height, 0.01, 1000);
+var camera = new THREE.PerspectiveCamera( 45, window.width / window.height, 1, 1000 );
+var cameraz = 20
+camera.position.set(camerax + 5, cameray + 5, cameraz);
+camera.up.set( 0, 0, 1 );
 camera.lookAt(new THREE.Vector3(camerax, cameray, 0));
 
 renderer = new THREE.WebGLRenderer();
-renderer.setClearColor(0xffffff, 1.0);
-renderer.setSize(600, 800);
+renderer.setClearColor(0xfafafa, 1.0);
+renderer.setSize( window.innerWidth, window.innerHeight );
 document.body.appendChild(renderer.domElement);
 var scene = new THREE.Scene();
+
+var light = new THREE.PointLight(0xffffff);
+light.position = camera.position;
+scene.add(light);
+
+// controls = new THREE.TrackballControls( camera );
+// controls.staticMoving = true;
+// controls.rotateSpeed = 3;
+
+// controls.rotateSpeed = 1.0;
+// controls.zoomSpeed = 1.2;
+// controls.panSpeed = 0.8;
+
+// controls.noZoom = false;
+// controls.noPan = false;
+
+// controls.radius = Math.min( width, height );
+// controls.target = new THREE.Vector3( camerax, cameray, 0 );
+
+// controls.update();
+
+function draw3DStreamline(points) {
+  var scale = d3.scale.linear().domain([0, 1]).range([0, 360]);
+  var arrowColor = d3.hsl(scale(Math.random()), 0.8, 0.7).toString()
+
+  var vPoints = [], hPoints = [], radius = 0.015;
+  points.forEach(function(point) {
+    var _x = lonToX(point[0]), _y = latToY(point[1]), _z = - point[2] / 50;
+    vPoints.push(new THREE.Vector3(_x, _y, _z));
+    hPoints.push(new THREE.Vector3(_x + radius * 1000, _y, _z));
+  });
+  var curve = new THREE.SplineCurve3(vPoints);
+
+  var extrudeSettings = {
+    steps: 200,
+    bevelEnabled: false,
+    extrudePath: curve
+  };
+
+  var pts = [],
+      numPts = 100;
+  for (var j = 0; j < numPts * 2; j++) {
+    var a = j / numPts * Math.PI;
+    pts.push(new THREE.Vector2(radius * Math.cos(a), radius * Math.sin(a)));
+  }
+  var shape = new THREE.Shape(pts);
+  var geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+  var material = new THREE.MeshLambertMaterial({
+    color: arrowColor,
+    wireframe: true
+  });
+  var mesh = new THREE.Mesh(geometry, material);
+  scene.add(mesh);
+
+}
+
 
 
 function drawMap(lon, lat, u0, v0, vortexCore) {
@@ -85,7 +144,9 @@ function drawMap(lon, lat, u0, v0, vortexCore) {
             new THREE.Vector3(u0ij / norm, v0ij / norm, 0),
             new THREE.Vector3(x, y, 0),
             0.1,
-            0x0000ff);
+            0x3498db,
+            0.05,
+            0.03);
           scene.add(arrow);
         }
       });
@@ -105,7 +166,8 @@ function drawMap(lon, lat, u0, v0, vortexCore) {
           if (vortexCore[i][j]) {
             var vertex = new THREE.Vector3(x, y, 0);
             geometry.vertices.push(vertex);
-            geometry.colors.push(new THREE.Color(0xff0000));
+            geometry.colors.push(new THREE.Color(0xe74c3c));
+            // draw3DStreamline(threedstreamline(xToLon(x), yToLat(y), 10, 200, 0.01));
           }
         }
       });
@@ -113,44 +175,39 @@ function drawMap(lon, lat, u0, v0, vortexCore) {
     scene.add(new THREE.ParticleSystem(geometry, material));
   })();
 
+  drawCoastLine();
+
   animate();
 
 }
 
-function draw3DStreamline(points) {
-  var vPoints = [];
-  points.forEach(function(point) {
-    vPoints.push(new THREE.Vector3(lonToX(point[0]), latToY(point[1]), - point[2]));
+var drawCoastLine = function () {
+  // load gml
+  var gml;
+  $.ajax({
+    url: "coastl_jpn.gml",
+    dataType: "xml",
+    async: false,
+    error: function () { alert('Error loading XML document'); },
+    success: function (data) { gml = data; }
   });
-  var splineCurve = new THREE.SplineCurve3(vPoints);
-  var extrudeSettings = {
-    steps: 200,
-    bevelEnabled: false,
-    extrudePath: splineCurve
-  };
 
-  var pts = [],
-      numPts = 10;
-  for (var j = 0; j < numPts * 2; j++) {
-    var a = j / numPts * Math.PI;
-    var radius = 0.005;
-    pts.push(new THREE.Vector2(radius * Math.cos(a), radius * Math.sin(a)));
-  }
-  var shape = new THREE.Shape(pts);
-
-  var geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
-  var material = new THREE.MeshLambertMaterial({
-    color: 0xffffff,
-    wireframe: false
+  // draw coast line
+  var material = new THREE.LineBasicMaterial({ color: 0x34495e });
+  $(gml).find('coastl').each(function() {
+    var posList = $(this).find('posList')[0].innerHTML.split(' ');
+    var geometry = new THREE.Geometry();
+    for (var i = 0, len = posList.length; i < len - 1; i += 2) {
+      var vertice = new THREE.Vector3(lonToX(posList[i + 1]), latToY(posList[i]), 0);
+      geometry.vertices.push(vertice);
+    }
+    var line = new THREE.Line(geometry, material);
+    scene.add(line);
   });
-  mesh = new THREE.Mesh(geometry, material);
-  scene.add(mesh);
-}
+};
+
 
 function animate() {
-  // camera.position.x = camerax + mouseX * 0.005;
-  // camera.position.y = cameray + mouseY * 0.005;
-  camera.lookAt(new THREE.Vector3(camerax, cameray, 0));
   requestAnimationFrame(animate);
   renderer.render(scene, camera);
 }
@@ -158,16 +215,23 @@ function animate() {
 function getZ() {
   var z = $('input.z-input').val();
   if (z) return parseInt(z);
-  return 10; // 決め打ち
+  return 40; // 決め打ち
 }
 
-renderer.domElement.addEventListener('click', function(e) {
-  var pickX = (xRange.max-xRange.min) * e.offsetX / 600 + xRange.min;
-  var pickY = yRange.max - (yRange.max-yRange.min) * e.offsetY / 800;
-  draw3DStreamline(threedstreamline(xToLon(pickX), yToLat(pickY), getZ(), 20, 0.01)); // z決め打ち
+document.addEventListener('mousemove', function (event) {
+  camera.lookAt(new THREE.Vector3(camerax, cameray, 0));
+  camera.position.set(camerax + 5, cameray + 5, cameraz + (window.innerHeight / 2 - event.clientY) / 20 );
 }, false);
 
-document.addEventListener('mousemove', function (event) {
-  mouseX = event.clientX;
-  mouseY = event.clientY;
+renderer.domElement.addEventListener('click', function(e) {
+  var pickX = (xRange.max - xRange.min) * e.offsetX / window.innerWidth + xRange.min;
+  var pickY = yRange.max - (yRange.max-yRange.min) * e.offsetY / window.innerHeight;
+  draw3DStreamline(threedstreamline(xToLon(pickX), yToLat(pickY), getZ(), 200, 0.01)); // z決め打ち
 }, false);
+
+function convertToZ (rawZ, lat) {
+  // var R = 40000 * 1000;
+  // var ratio = width / ((lonW - lonE) * R * Math.cos(lat) / 360);
+  // return - ratio * rawZ;
+  return - rawZ / 50;
+}

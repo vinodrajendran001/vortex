@@ -8,6 +8,7 @@ function load(url) {
 var interpolate, streamline, threedinterpolate, threedstreamline;
 $(function() {
   $.when(load('u.dods'), load('v.dods'), load('w.dods')).done(function(u, v, w) {
+    console.log(w);
     var h; //z index:0~30
     var i; //y index:0~80
     var j; //x index:0~60
@@ -312,6 +313,7 @@ $(function() {
         w[0][0][0][z_index + 1][y0 + 1][x0 + 1],
         w[0][0][0][z_index + 1][y0 + 1][x0]
       ];
+      sz = sz.map(function(x) { return x * 100000; });
       var vx = 0,
         vy = 0,
         vz = 0;
@@ -361,7 +363,7 @@ $(function() {
       return (points);
     };
     pointsofvor = getpointofvor(vor);
-    var tmpStreamLine = threedstreamline(pointsofvor[4000][0], pointsofvor[4000][1], pointsofvor[4000][2] - 300, 100, 0.1);
+    var tmpStreamLine = threedstreamline(pointsofvor[4000][0], pointsofvor[4000][1], pointsofvor[4000][2] - 300, 30, 0.1);
     draw3DStreamline(tmpStreamLine);
   });
 });
