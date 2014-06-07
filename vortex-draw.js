@@ -195,7 +195,7 @@ var drawCoastLine = function () {
   // draw coast line
   var material = new THREE.LineBasicMaterial({ color: 0x34495e });
   $(gml).find('coastl').each(function() {
-    var posList = $(this).find('posList')[0].innerHTML.split(' ');
+    var posList = $(this).find('posList').text().split(' ');
     var geometry = new THREE.Geometry();
     for (var i = 0, len = posList.length; i < len - 1; i += 2) {
       var vertice = new THREE.Vector3(lonToX(posList[i + 1]), latToY(posList[i]), 0);
