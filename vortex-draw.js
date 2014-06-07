@@ -38,7 +38,7 @@ function yToLat(y) {
   return radToAng(Math.asin(tanh( (128-y) / _r )));
 }
 
-var mouseX, mouseY, trackball;
+var mouseX, mouseY, trackball, shiftKeyDown;
 
 var lonW = 141;
 var lonE = 147;
@@ -59,7 +59,6 @@ var height = yRange.max - yRange.min;
 
 var camerax = (xRange.max + xRange.min)/2,
     cameray = (yRange.max + yRange.min)/2;
-// var camera = new THREE.OrthographicCamera(- width, width, height,  - height, 0.01, 1000);
 var camera = new THREE.PerspectiveCamera( 45, window.width / window.height, 1, 1000 );
 var cameraz = 20
 camera.position.set(camerax + 5, cameray + 5, cameraz);
@@ -76,21 +75,21 @@ var light = new THREE.PointLight(0xffffff);
 light.position = camera.position;
 scene.add(light);
 
-// controls = new THREE.TrackballControls( camera );
-// controls.staticMoving = true;
-// controls.rotateSpeed = 3;
+controls = new THREE.TrackballControls( camera );
+controls.staticMoving = true;
+controls.rotateSpeed = 3;
 
-// controls.rotateSpeed = 1.0;
-// controls.zoomSpeed = 1.2;
-// controls.panSpeed = 0.8;
+controls.rotateSpeed = 1.0;
+controls.zoomSpeed = 1.2;
+controls.panSpeed = 0.8;
 
-// controls.noZoom = false;
-// controls.noPan = false;
+controls.noZoom = false;
+controls.noPan = false;
 
-// controls.radius = Math.min( width, height );
-// controls.target = new THREE.Vector3( camerax, cameray, 0 );
+controls.radius = Math.min( width, height );
+controls.target = new THREE.Vector3( camerax, cameray, 0 );
 
-// controls.update();
+controls.update();
 
 function draw3DStreamline(points) {
   var scale = d3.scale.linear().domain([0, 1]).range([0, 360]);
@@ -200,6 +199,7 @@ var drawCoastLine = function () {
 
 
 function animate() {
+  controls.update();
   requestAnimationFrame(animate);
   renderer.render(scene, camera);
 }
@@ -210,20 +210,25 @@ function getZ() {
   return 40; // 決め打ち
 }
 
-document.addEventListener('mousemove', function (event) {
-  camera.lookAt(new THREE.Vector3(camerax, cameray, 0));
-  camera.position.set(camerax + 8, cameray + 8, cameraz + (window.innerHeight / 2 - event.clientY) / 15 );
-}, false);
-
-renderer.domElement.addEventListener('click', function(e) {
-  var pickX = (xRange.max - xRange.min) * e.offsetX / window.innerWidth + xRange.min;
-  var pickY = yRange.max - (yRange.max-yRange.min) * e.offsetY / window.innerHeight;
-  draw3DStreamline(threedstreamline(xToLon(pickX), yToLat(pickY), getZ(), 200, 0.01)); // z決め打ち
-}, false);
-
 function convertToZ (rawZ, lat) {
   // var R = 40000 * 1000;
   // var ratio = width / ((lonW - lonE) * R * Math.cos(lat) / 360);
   // return - ratio * rawZ;
   return - rawZ / 50;
 }
+
+$(document).keydown(function (e) {
+  if (e.shiftKey) shiftKeyDown = true;
+  console.log(shiftKeyDown);
+});
+$(document).keyup(function (e) {
+  shiftKeyDown = false;
+  console.log(shiftKeyDown);
+});
+$(document).click(function (e) {
+  if(shiftKeyDown) {
+    var pickX = (xRange.max - xRange.min) * e.offsetX / window.innerWidth + xRange.min;
+    var pickY = yRange.max - (yRange.max-yRange.min) * e.offsetY / window.innerHeight;
+    draw3DStreamline(threedstreamline(xToLon(pickX), yToLat(pickY), getZ(), 200, 0.01)); // z決め打ち
+  }
+});
