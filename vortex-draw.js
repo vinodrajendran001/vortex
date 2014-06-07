@@ -133,6 +133,7 @@ function drawMap(lon, lat, u0, v0, vortexCore) {
   var ys = lat.map(latToY);
 
   (function() {
+    group = new THREE.Object3D();
     ys.forEach(function(y, i) {
       xs.forEach(function(x, j) {
         if (u0[i][j] != IGNORE_VALUE && v0[i][j] != IGNORE_VALUE) {
@@ -146,10 +147,11 @@ function drawMap(lon, lat, u0, v0, vortexCore) {
             0x3498db,
             0.05,
             0.03);
-          scene.add(arrow);
+          group.add(arrow);
         }
       });
     });
+    scene.add(group);
   })();
 
   (function() {
@@ -182,6 +184,7 @@ function drawMap(lon, lat, u0, v0, vortexCore) {
 
 var drawCoastLine = function () {
   d3.json('coastl_jpn.json').on('load', function (data) {
+    group = new THREE.Object3D();
     var lineMaterial = new THREE.LineBasicMaterial({ color: 0x34495e });
     data.forEach(function (row) {
       var geometry = new THREE.Geometry();
@@ -192,8 +195,9 @@ var drawCoastLine = function () {
         geometry.vertices.push(vertice);
       });
       var line = new THREE.Line(geometry, lineMaterial);
-      scene.add(line);
+      group.add(line);
     });
+    scene.add(group);
   }).get();
 };
 
