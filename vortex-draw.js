@@ -220,7 +220,7 @@ function getZ() {
 
 document.addEventListener('mousemove', function (event) {
   camera.lookAt(new THREE.Vector3(camerax, cameray, 0));
-  camera.position.set(camerax + 5, cameray + 5, cameraz + (window.innerHeight / 2 - event.clientY) / 20 );
+  camera.position.set(camerax + 8, cameray + 8, cameraz + (window.innerHeight / 2 - event.clientY) / 15 );
 }, false);
 
 renderer.domElement.addEventListener('click', function(e) {
