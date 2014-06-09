@@ -87,13 +87,21 @@ controls.noZoom = false;
 controls.noPan = false;
 
 controls.radius = Math.min( width, height );
-controls.target = new THREE.Vector3( camerax, cameray, 0 );
+controls.target = new THREE.Vector3( camerax, cameray, -5 );
 
 controls.update();
 
 function draw3DStreamline(points) {
   var scale = d3.scale.linear().domain([0, 1]).range([0, 360]);
-  var arrowColor = d3.hsl(scale(Math.random()), 0.8, 0.7).toString()
+  var color = d3.hsl(scale(Math.random()), 0.8, 0.8).toString()
+
+  var sphereGeo = new THREE.SphereGeometry(0.1);
+  var SphereMat = new THREE.MeshBasicMaterial({color: 0xe74c3c});
+  var sphere = new THREE.Mesh( sphereGeo, SphereMat );
+  sphere.position.x = lonToX(points[0][0]);
+  sphere.position.y = latToY(points[0][1]);
+  sphere.position.z = - points[0][2] / 50;
+  scene.add(sphere);
 
   var vPoints = [], hPoints = [], radius = 0.015;
   points.forEach(function(point) {
@@ -118,12 +126,11 @@ function draw3DStreamline(points) {
   var shape = new THREE.Shape(pts);
   var geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
   var material = new THREE.MeshLambertMaterial({
-    color: arrowColor,
+    color: color,
     wireframe: true
   });
   var mesh = new THREE.Mesh(geometry, material);
   scene.add(mesh);
-
 }
 
 
@@ -168,7 +175,6 @@ function drawMap(lon, lat, u0, v0, vortexCore) {
             var vertex = new THREE.Vector3(x, y, 0);
             geometry.vertices.push(vertex);
             geometry.colors.push(new THREE.Color(0xe74c3c));
-            // draw3DStreamline(threedstreamline(xToLon(x), yToLat(y), 10, 200, 0.01));
           }
         }
       });

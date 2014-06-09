@@ -180,61 +180,6 @@ $(function() {
       return point;
     };
 
-    //interpolation
-    interpolate = function(xx, yy) { //del 0<=x<=61,0<=y<=81
-      // 141<=xx<=147,35<=yy<=43
-      //set z_index=1
-      /*
-(x3,y3)      (x2,y2)          (-1,1)            (1,1)
-
-   (x,y)             <==>         (p,q)
-
-
-(x0,y0)      (x1,y1)          (-1,-1)           (1,1)
-
-*/
-      var p, q, x, y, x0, y0, x1, y1, x2, y2, x3, y3; //0<=x0<=60,0<=y0<=80
-      //change x to 0~60 from 141~147, y to 0~80 from 35~43
-      x = (xx - 141) * 10;
-      y = (yy - 35) * 10;
-      x0 = Math.floor(x);
-      y0 = Math.floor(y);
-      x1 = x0 + 1;
-      y1 = y0;
-      x2 = x0 + 1;
-      y2 = y0 + 1;
-      x3 = x0;
-      y3 = y0 + 1;
-      p = 2 * (x - x0) - 1;
-      q = 2 * (y - y0) - 1;
-      var vx = 0.25 * (1 - p) * (1 - q) * u[0][0][0][1][y0][x0] + 0.25 * (1 + p) * (1 - q) * u[0][0][0][1][y1][x1] + 0.25 * (1 + p) * (1 + q) * u[0][0][0][1][y2][x2] + 0.25 * (1 - p) * (1 + q) * u[0][0][0][1][y3][x3];
-      var vy = 0.25 * (1 - p) * (1 - q) * v[0][0][0][1][y0][x0] + 0.25 * (1 + p) * (1 - q) * v[0][0][0][1][y1][x1] + 0.25 * (1 + p) * (1 + q) * v[0][0][0][1][y2][x2] + 0.25 * (1 - p) * (1 + q) * v[0][0][0][1][y3][x3];
-      return [vx, vy];
-    };
-    streamline = function(x0, y0, n, deltaT) { //141<=x<=147,35<=y<=43
-      var k1 = [],
-        k2 = [],
-        k3 = [],
-        k4 = [];
-      var points = [
-        [x0, y0]
-      ];
-      for (var i = 0; i < n; i++) {
-        k1[0] = (interpolate(x0, y0))[0]; //x direction
-        k1[1] = (interpolate(x0, y0))[1]; //y direction
-        k2[0] = (interpolate((x0 + k1[0] * deltaT / 2), (y0 + k1[1] * deltaT / 2)))[0];
-        k2[1] = (interpolate((x0 + k1[0] * deltaT / 2), (y0 + k1[1] * deltaT / 2)))[1];
-        k3[0] = (interpolate((x0 + k2[0] * deltaT / 2), (y0 + k2[1] * deltaT / 2)))[0];
-        k3[1] = (interpolate((x0 + k2[0] * deltaT / 2), (y0 + k2[1] * deltaT / 2)))[1];
-        k4[0] = (interpolate((x0 + k3[0] * deltaT), (y0 + k3[1] * deltaT)))[0];
-        k4[1] = (interpolate((x0 + k3[0] * deltaT), (y0 + k3[1] * deltaT)))[1];
-        x0 = x0 + deltaT / 6.0 * (k1[0] + 2 * k2[0] + 2 * k3[0] + k4[0]);
-        y0 = y0 + deltaT / 6.0 * (k1[1] + 2 * k2[1] + 2 * k3[1] + k4[1]);
-        points.push([x0, y0]);
-      }
-      return (points);
-    };
-    // drawStreamline(streamline(144, 38, 20, 0.01));
     drawMap(u[0][4], u[0][3], u[0][0][0][0], v[0][0][0][0], vor[1]);
 
     //goest to 3D
@@ -286,84 +231,101 @@ $(function() {
       var pk = [-1, 1, 1, -1, -1, 1, 1, -1];
       var qk = [-1, -1, 1, 1, -1, -1, 1, 1];
       var rk = [-1, -1, -1, -1, 1, 1, 1, 1];
-      var sx = [u[0][0][0][z_index][y0][x0],
-        u[0][0][0][z_index][y0][x0 + 1],
-        u[0][0][0][z_index][y0 + 1][x0 + 1],
-        u[0][0][0][z_index][y0 + 1][x0],
-        u[0][0][0][z_index + 1][y0][x0],
-        u[0][0][0][z_index + 1][y0][x0 + 1],
-        u[0][0][0][z_index + 1][y0 + 1][x0 + 1],
-        u[0][0][0][z_index + 1][y0 + 1][x0]
-      ];
-      var sy = [v[0][0][0][z_index][y0][x0],
-        v[0][0][0][z_index][y0][x0 + 1],
-        v[0][0][0][z_index][y0 + 1][x0 + 1],
-        v[0][0][0][z_index][y0 + 1][x0],
-        v[0][0][0][z_index + 1][y0][x0],
-        v[0][0][0][z_index + 1][y0][x0 + 1],
-        v[0][0][0][z_index + 1][y0 + 1][x0 + 1],
-        v[0][0][0][z_index + 1][y0 + 1][x0]
-      ];
-      var sz = [w[0][0][0][z_index][y0][x0],
-        w[0][0][0][z_index][y0][x0 + 1],
-        w[0][0][0][z_index][y0 + 1][x0 + 1],
-        w[0][0][0][z_index][y0 + 1][x0],
-        w[0][0][0][z_index + 1][y0][x0],
-        w[0][0][0][z_index + 1][y0][x0 + 1],
-        w[0][0][0][z_index + 1][y0 + 1][x0 + 1],
-        w[0][0][0][z_index + 1][y0 + 1][x0]
-      ];
-      sz = sz.map(function(x) { return x * 100000; });
-      var vx = 0,
-        vy = 0,
-        vz = 0;
-      for (i = 0; i < pk.length; i++) {
-        vx += 0.125 * (1 + pk[i] * p) * (1 + qk[i] * q) * (1 + rk[i] * r) * sx[i];
+      var _u = u[0][0][0], _v = v[0][0][0], _w = w[0][0][0];
+
+      // TODO: z_index,x0,y0の値と緯度経度の範囲だけで決めて、ループ減らす
+      for (var valNum = 2; valNum >= 0; valNum--) {
+        var val = [_u, _v, _w][valNum];
+        if (typeof val == 'undefined') return undefined;
+        for (var i = 1; i >= 0; i--) {
+          if (typeof val[z_index + i] == 'undefined') return undefined;
+          for (var j = 1; j >= 0; j--) {
+            if (typeof val[z_index + i][y0 + j] == 'undefined') return undefined;
+            for (var k = 1; k >= 0; k-- ) {
+              if (typeof val[z_index + i][y0 + j][x0 + k] == 'undefined') return undefined;
+
+            }
+          }
+        }
       }
+
+      var _uList = [
+        _u[z_index][y0][x0],
+        _u[z_index][y0][x0 + 1],
+        _u[z_index][y0 + 1][x0 + 1],
+        _u[z_index][y0 + 1][x0],
+        _u[z_index + 1][y0][x0],
+        _u[z_index + 1][y0][x0 + 1],
+        _u[z_index + 1][y0 + 1][x0 + 1],
+        _u[z_index + 1][y0 + 1][x0]
+      ];
+      var _vList = [
+        _v[z_index][y0][x0],
+        _v[z_index][y0][x0 + 1],
+        _v[z_index][y0 + 1][x0 + 1],
+        _v[z_index][y0 + 1][x0],
+        _v[z_index + 1][y0][x0],
+        _v[z_index + 1][y0][x0 + 1],
+        _v[z_index + 1][y0 + 1][x0 + 1],
+        _v[z_index + 1][y0 + 1][x0]
+      ];
+      var _wList = [
+        _w[z_index][y0][x0],
+        _w[z_index][y0][x0 + 1],
+        _w[z_index][y0 + 1][x0 + 1],
+        _w[z_index][y0 + 1][x0],
+        _w[z_index + 1][y0][x0],
+        _w[z_index + 1][y0][x0 + 1],
+        _w[z_index + 1][y0 + 1][x0 + 1],
+        _w[z_index + 1][y0 + 1][x0]
+      ];
+      _wList = _wList.map(function(x) { return x * 100000; });
+      var vx = 0, vy = 0, vz = 0;
       for (i = 0; i < pk.length; i++) {
-        vy += 0.125 * (1 + pk[i] * p) * (1 + qk[i] * q) * (1 + rk[i] * r) * sy[i];
-      }
-      for (i = 0; i < pk.length; i++) {
-        vz += 0.125 * (1 + pk[i] * p) * (1 + qk[i] * q) * (1 + rk[i] * r) * sz[i];
+        vx += 0.125 * (1 + pk[i] * p) * (1 + qk[i] * q) * (1 + rk[i] * r) * _uList[i];
+        vy += 0.125 * (1 + pk[i] * p) * (1 + qk[i] * q) * (1 + rk[i] * r) * _vList[i];
+        vz += 0.125 * (1 + pk[i] * p) * (1 + qk[i] * q) * (1 + rk[i] * r) * _wList[i];
       }
       return [vx, vy, vz]; //
     };
     //threedinterpolate(143,38,60);
 
-    threedstreamline = function(x0, y0, z0, n, deltaT) {
+    threedstreamline = function(x, y, z, n, deltaT) {
       //141<=x<=147,35<=y<=43,0<=z_index<=30,0.5[0]<zz<820[30]
-      var k1 = [],
-        k2 = [],
-        k3 = [],
-        k4 = [];
-      var points = [
-        [x0, y0, z0]
-      ];
+      var k1, k2, k3, k4;
+      var points = [[x, y, z]];
       for (var i = 0; i < n; i++) {
-        k1[0] = (threedinterpolate(x0, y0, z0))[0]; //x direction
-        k1[1] = (threedinterpolate(x0, y0, z0))[1]; //y direction
-        k1[2] = (threedinterpolate(x0, y0, z0))[2]; //z direction
-        k2[0] = (threedinterpolate((x0 + k1[0] * deltaT / 2), (y0 + k1[1] * deltaT / 2), (z0 + k1[2] * deltaT / 2)))[0];
-        k2[1] = (threedinterpolate((x0 + k1[0] * deltaT / 2), (y0 + k1[1] * deltaT / 2), (z0 + k1[2] * deltaT / 2)))[1];
-        k2[2] = (threedinterpolate((x0 + k1[0] * deltaT / 2), (y0 + k1[1] * deltaT / 2), (z0 + k1[2] * deltaT / 2)))[2];
-        k3[0] = (threedinterpolate((x0 + k2[0] * deltaT / 2), (y0 + k2[1] * deltaT / 2), (z0 + k2[2] * deltaT / 2)))[0];
-        k3[1] = (threedinterpolate((x0 + k2[0] * deltaT / 2), (y0 + k2[1] * deltaT / 2), (z0 + k2[2] * deltaT / 2)))[1];
-        k3[2] = (threedinterpolate((x0 + k2[0] * deltaT / 2), (y0 + k2[1] * deltaT / 2), (z0 + k2[2] * deltaT / 2)))[2];
-        k4[0] = (threedinterpolate((x0 + k3[0] * deltaT), (y0 + k3[1] * deltaT), (z0 + k3[2] * deltaT)))[0];
-        k4[1] = (threedinterpolate((x0 + k3[0] * deltaT), (y0 + k3[1] * deltaT), (z0 + k3[2] * deltaT)))[1];
-        k4[2] = (threedinterpolate((x0 + k3[0] * deltaT), (y0 + k3[1] * deltaT), (z0 + k3[2] * deltaT)))[2];
-        x0 = x0 + deltaT / 6.0 * (k1[0] + 2 * k2[0] + 2 * k3[0] + k4[0]);
-        y0 = y0 + deltaT / 6.0 * (k1[1] + 2 * k2[1] + 2 * k3[1] + k4[1]);
-        z0 = z0 + deltaT / 6.0 * (k1[2] + 2 * k2[2] + 2 * k3[2] + k4[2]);
-        if (z0 > 500 || z0 < 10) {
+        k1 = threedinterpolate(x, y, z); //x direction
+        if (!k1) break;
+        k2 = threedinterpolate((x + k1[0] * deltaT / 2), (y + k1[1] * deltaT / 2), (z + k1[2] * deltaT / 2));
+        if (!k2) break;
+        k3 = threedinterpolate((x + k2[0] * deltaT / 2), (y + k2[1] * deltaT / 2), (z + k2[2] * deltaT / 2));
+        if (!k3) break;
+        k4 = threedinterpolate((x + k3[0] * deltaT), (y + k3[1] * deltaT), (z + k3[2] * deltaT));
+        if (!k4) break;
+        x = x + deltaT / 6.0 * (k1[0] + 2 * k2[0] + 2 * k3[0] + k4[0]);
+        y = y + deltaT / 6.0 * (k1[1] + 2 * k2[1] + 2 * k3[1] + k4[1]);
+        z = z + deltaT / 6.0 * (k1[2] + 2 * k2[2] + 2 * k3[2] + k4[2]);
+        if (z > 500 || z < 10) {
           break;
         }
-        points.push([x0, y0, z0]);
+        points.push([x, y, z]);
       }
       return (points);
     };
     pointsofvor = getpointofvor(vor);
-    var tmpStreamLine = threedstreamline(pointsofvor[4000][0], pointsofvor[4000][1], pointsofvor[4000][2] - 300, 30, 0.1);
-    draw3DStreamline(tmpStreamLine);
+
+    // 重いので描画数を制限する
+    for (var i = pointsofvor.length - 1; i >= 0; i--) {
+      var p = pointsofvor[i];
+      if (p[0] > 142 && p[0] < 143 && p[1] > 36 && p[1] < 37 && p[2] > 50 && p[2] < 300) {
+        var tmpStreamLine = threedstreamline(p[0] + 0.1, p[1] + 0.1, p[2] + 0.1, 2000, 0.01);
+        if (tmpStreamLine) {
+          draw3DStreamline(tmpStreamLine);
+          break;
+        }
+      }
+
+    }
   });
 });
