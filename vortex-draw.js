@@ -21,7 +21,6 @@ function radToAng (rad) {
 function lonToX(lon) {
   var lonRad = angToRad(lon);
   return _r * (lonRad + Math.PI);
-
 }
 
 function latToY(lat) {
@@ -40,25 +39,19 @@ function yToLat(y) {
 
 var mouseX, mouseY, trackball, shiftKeyDown;
 
-var lonW = 141;
-var lonE = 147;
-var latS = 35;
-var latN = 43;
-var margin = 0.5;
-var xRange = {
-  min: lonToX(lonW) - margin,
-  max: lonToX(lonE) + margin
-};
-var yRange = {
-  min: latToY(latS) - margin,
-  max: latToY(latN) + margin
-};
-console.log(xRange, yRange);
-var width = xRange.max - xRange.min;
-var height = yRange.max - yRange.min;
+var lonW = 141,
+    lonE = 147,
+    latS = 35,
+    latN = 43;
 
-var camerax = (xRange.max + xRange.min)/2,
-    cameray = (yRange.max + yRange.min)/2;
+var xRange = { min: lonToX(lonW), max: lonToX(lonE) },
+    yRange = { min: latToY(latS), max: latToY(latN) };
+
+var width = xRange.max - xRange.min,
+    height = yRange.max - yRange.min;
+
+var camerax = (xRange.max + xRange.min) / 2,
+    cameray = (yRange.max + yRange.min) / 2;
 var camera = new THREE.PerspectiveCamera( 45, window.width / window.height, 1, 1000 );
 var cameraz = 20
 camera.position.set(camerax + 5, cameray + 5, cameraz);
@@ -75,6 +68,7 @@ var light = new THREE.PointLight(0xffffff);
 light.position = camera.position;
 scene.add(light);
 
+// TrackballControls
 controls = new THREE.TrackballControls( camera );
 controls.staticMoving = true;
 controls.rotateSpeed = 3;
@@ -91,75 +85,60 @@ controls.target = new THREE.Vector3( camerax, cameray, -5 );
 
 controls.update();
 
+// draw streamline
 function draw3DStreamline(points) {
-  var scale = d3.scale.linear().domain([0, 1]).range([0, 360]);
-  var color = d3.hsl(scale(Math.random()), 0.8, 0.8).toString()
+  var segments = 64, // default 64
+      tubeRadius = 0.015,
+      radiusSegments = 8, // default 8
+      closed = false, // if set to true, the start of the tube and the end will be connected together. Default false.
+      debug = true;
 
-  var sphereGeo = new THREE.SphereGeometry(0.1);
-  var SphereMat = new THREE.MeshBasicMaterial({color: 0xe74c3c});
-  var sphere = new THREE.Mesh( sphereGeo, SphereMat );
-  sphere.position.x = lonToX(points[0][0]);
-  sphere.position.y = latToY(points[0][1]);
-  sphere.position.z = - points[0][2] / 50;
-  scene.add(sphere);
+  var scale = d3.scale.linear().domain([0, 1]).range([0, 360]),
+      tubeColor = d3.hsl(scale(Math.random()), 0.8, 0.8).toString()
 
-  var vPoints = [], hPoints = [], radius = 0.015;
+  var vPoints = [], vertexColors = [];
   points.forEach(function(point) {
-    var _x = lonToX(point[0]), _y = latToY(point[1]), _z = - point[2] / 50;
-    vPoints.push(new THREE.Vector3(_x, _y, _z));
-    hPoints.push(new THREE.Vector3(_x + radius * 1000, _y, _z));
+    vPoints.push(new THREE.Vector3(lonToX(point[0]), latToY(point[1]), mToZ(point[2])));
   });
-  var curve = new THREE.SplineCurve3(vPoints);
+  var spline = new THREE.SplineCurve3(vPoints);
 
-  var extrudeSettings = {
-    steps: 200,
-    bevelEnabled: false,
-    extrudePath: curve
-  };
+  var geometry = new THREE.TubeGeometry(spline, segments, tubeRadius, radiusSegments, closed, debug);
 
-  var pts = [],
-      numPts = 100;
-  for (var j = 0; j < numPts * 2; j++) {
-    var a = j / numPts * Math.PI;
-    pts.push(new THREE.Vector2(radius * Math.cos(a), radius * Math.sin(a)));
-  }
-  var shape = new THREE.Shape(pts);
-  var geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
   var material = new THREE.MeshLambertMaterial({
-    color: color,
-    wireframe: true
+     color: tubeColor,
+     wireframe: true
   });
+
   var mesh = new THREE.Mesh(geometry, material);
   scene.add(mesh);
 }
 
+// z = 0 での流速ベクトル、及び渦点を描画
+function drawMap(lonList, latList, u0, v0, vortexCore) {
+  var xs = lonList.map(lonToX);
+  var ys = latList.map(latToY);
 
-
-function drawMap(lon, lat, u0, v0, vortexCore) {
-  var xs = lon.map(lonToX);
-  var ys = lat.map(latToY);
-
-  (function() {
-    group = new THREE.Object3D();
-    ys.forEach(function(y, i) {
-      xs.forEach(function(x, j) {
-        if (u0[i][j] != IGNORE_VALUE && v0[i][j] != IGNORE_VALUE) {
-          var u0ij = u0[i][j];
-          var v0ij = -v0[i][j];
-          var norm = Math.sqrt(u0ij * u0ij + v0ij * v0ij);
-          var arrow = new THREE.ArrowHelper(
-            new THREE.Vector3(u0ij / norm, v0ij / norm, 0),
-            new THREE.Vector3(x, y, 0),
-            0.1,
-            0x3498db,
-            0.05,
-            0.03);
-          group.add(arrow);
-        }
-      });
-    });
-    scene.add(group);
-  })();
+  // (function() {
+  //   group = new THREE.Object3D();
+  //   ys.forEach(function(y, i) {
+  //     xs.forEach(function(x, j) {
+  //       if (u0[i][j] != IGNORE_VALUE && v0[i][j] != IGNORE_VALUE) {
+  //         var u0ij = u0[i][j];
+  //         var v0ij = -v0[i][j];
+  //         var norm = Math.sqrt(u0ij * u0ij + v0ij * v0ij);
+  //         var arrow = new THREE.ArrowHelper(
+  //           new THREE.Vector3(u0ij / norm, v0ij / norm, 0),
+  //           new THREE.Vector3(x, y, 0),
+  //           0.1,
+  //           0x3498db,
+  //           0.05,
+  //           0.03);
+  //         group.add(arrow);
+  //       }
+  //     });
+  //   });
+  //   scene.add(group);
+  // })();
 
   (function() {
     var geometry = new THREE.Geometry();
@@ -183,12 +162,10 @@ function drawMap(lon, lat, u0, v0, vortexCore) {
   })();
 
   drawCoastLine();
-
   animate();
-
 }
 
-var drawCoastLine = function () {
+function drawCoastLine() {
   d3.json('coastl_jpn.json').on('load', function (data) {
     group = new THREE.Object3D();
     var lineMaterial = new THREE.LineBasicMaterial({ color: 0x34495e });
@@ -205,8 +182,7 @@ var drawCoastLine = function () {
     });
     scene.add(group);
   }).get();
-};
-
+}
 
 function animate() {
   controls.update();
@@ -214,26 +190,20 @@ function animate() {
   renderer.render(scene, camera);
 }
 
-function getZ() {
-  var z = $('input.z-input').val();
-  if (z) return parseInt(z);
-  return 40; // 決め打ち
-}
 
-function convertToZ (rawZ, lat) {
+
+function mToZ (rawZ, lat) {
   // var R = 40000 * 1000;
   // var ratio = width / ((lonW - lonE) * R * Math.cos(lat) / 360);
   // return - ratio * rawZ;
   return - rawZ / 50;
 }
 
-$(document).keydown(function (e) {
-  if (e.shiftKey) shiftKeyDown = true;
-});
-$(document).keyup(function (e) {
-  shiftKeyDown = false;
-});
+
+$(document).keydown(function (e) { if (e.shiftKey) shiftKeyDown = true; });
+$(document).keyup(function (e) { shiftKeyDown = false; });
 $(document).click(function (e) {
+  var xpos, ypos;
   if(shiftKeyDown) {
     if(e.offsetX == undefined) { // for firefox
       xpos = e.pageX - $('canvas').offset().left;
@@ -244,6 +214,6 @@ $(document).click(function (e) {
     }
     var pickX = (xRange.max - xRange.min) * xpos / window.innerWidth + xRange.min;
     var pickY = yRange.max - (yRange.max - yRange.min) * ypos / window.innerHeight;
-    draw3DStreamline(threedstreamline(xToLon(pickX), yToLat(pickY), getZ(), 200, 0.01)); // z決め打ち
+    draw3DStreamline(threedstreamline(xToLon(pickX), yToLat(pickY), 50, 200, 0.01)); //  TODO: 決め打ちの値
   }
 });
