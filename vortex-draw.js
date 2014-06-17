@@ -89,7 +89,7 @@ controls.update();
 function draw3DStreamline(points) {
   var segments = 64, // default 64
       tubeRadius = 0.015,
-      radiusSegments = 8, // default 8
+      radiusSegments = 16, // default 8
       closed = false, // if set to true, the start of the tube and the end will be connected together. Default false.
       debug = true;
 

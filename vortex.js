@@ -140,7 +140,7 @@ $(function() {
               Q = -v12 * v21 - v23 * v32 - v13 * v31; // should times 1/2??
               R = v12 * v23 * v31 + v21 * v13 * v32;
 
-              if (Q * Q * Q / 27 + R * R / 4 > 0 && Math.abs(u[0][0][0][zIndex][yIndex][xIndex]) < 0.25 && Math.abs(v[0][0][0][zIndex][yIndex][xIndex]) < 0.25 && Math.abs(w[0][0][0][zIndex][yIndex][xIndex]) < 0.25) vor[zIndex][yIndex][xIndex] = true;
+              if (Q * Q * Q / 27 + R * R / 4 > 0 && Math.abs(u[0][0][0][zIndex][yIndex][xIndex]) < 0.5 && Math.abs(v[0][0][0][zIndex][yIndex][xIndex]) < 0.5 && Math.abs(w[0][0][0][zIndex][yIndex][xIndex]) < 0.5) vor[zIndex][yIndex][xIndex] = true;
             }
           }
         }
@@ -286,8 +286,8 @@ $(function() {
         p;
     for (var i = pointsofvor.length - 1; i >= 0; i--) {
       p = pointsofvor[i];
-      var _streamline = threedstreamline(p[0], p[1], p[2], 500, 0.01);
-      if (_streamline && _streamline.length > 1) draw3DStreamline(_streamline);
+      var _streamline = threedstreamline(p[0], p[1], p[2], 700, 0.001);
+      if (_streamline && _streamline.length > 500) draw3DStreamline(_streamline);
     }
 
   });
