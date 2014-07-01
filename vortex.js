@@ -6,8 +6,6 @@ function load(url) {
   return deferred;
 }
 
-var threedinterpolate, threedstreamline;
-
 $(function() {
   $.when(load('u.dods'), load('v.dods'), load('w.dods')).done(function(u, v, w) {
     var _u = u[0][0][0], _v = v[0][0][0], _w = w[0][0][0];
@@ -154,7 +152,7 @@ $(function() {
     console.timeEnd("detect vorcan");
 
     // function of get the exact point of vor
-    var getpointofvor = function(vor) {
+    var getSeedPoints = function(vor) {
       var point = []; // [(x0,y0,z0),...]
       for (zIndex = 1; zIndex <= 29; zIndex++) {
         for (yIndex = 1; yIndex <= 79; yIndex++) {
@@ -170,7 +168,7 @@ $(function() {
       return point;
     };
 
-    drawMap(u[0][4], u[0][3], u[0][0][0][0], v[0][0][0][0], vor[1]);
+    draw(u[0][4], u[0][3], u[0][0][0][0], v[0][0][0][0], vor[1]);
 
     // goest to 3D
     // notice first about z , u[0][2]+([0] to [30]) contains the depth of z for different indoex
@@ -200,8 +198,6 @@ $(function() {
       q = 2 * y - y0 - (y0 + 1);
       r = (2 * z - z0 - z1) / (z1 - z0);
       // calculate S using p,q,r and S0`S7
-
-
 
       for (var valNum = 2; valNum >= 0; valNum--) {
         var val = valList[valNum];
@@ -282,12 +278,12 @@ $(function() {
       return (streamLinePoints);
     };
 
-    var pointsofvor = getpointofvor(vor),
+    var pointsofvor = getSeedPoints(vor),
         p;
     for (var i = pointsofvor.length - 1; i >= 0; i--) {
       p = pointsofvor[i];
       var _streamline = threedstreamline(p[0], p[1], p[2], 700, 0.001);
-      if (_streamline && _streamline.length > 500) draw3DStreamline(_streamline);
+      if (_streamline && _streamline.length > 500) drawStreamline(_streamline);
     }
 
   });
