@@ -1,6 +1,6 @@
 function drawCoastlines() {
   d3.json('coastl_jpn.json').on('load', function (data) {
-    group = new THREE.Object3D();
+    var group = new THREE.Object3D();
     var lineMaterial = new THREE.LineBasicMaterial({ color: 0x34495e });
     data.forEach(function (row) {
       var geometry = new THREE.Geometry();
