@@ -7,7 +7,7 @@ function load(url) {
 }
 
 $(function() {
-  $.when(load('u.dods'), load('v.dods'), load('w.dods')).done(function(u, v, w) {
+  $.when(load('data/u.dods'), load('data/v.dods'), load('data/w.dods')).done(function(u, v, w) {
     var _u = u[0][0][0],
         _v = v[0][0][0],
         _w = w[0][0][0],
