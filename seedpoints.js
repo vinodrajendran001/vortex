@@ -1,4 +1,4 @@
-function getSeedPoints2(lonList, latList, depthList, u, v, w) {
+function getSeedPoints(lonList, latList, depthList, u, v, w) {
   var depthListLength = depthList.length,
       latListLength = latList.length,
       lonListLength = lonList.length;
@@ -23,9 +23,8 @@ function getSeedPoints2(lonList, latList, depthList, u, v, w) {
         }
       }
     }
+    console.log("num of singularPoints: " + singularPoints.length);
   })();
-
-  console.log("num of singularPoints: " + singularPoints.length);
 
   var seedPoints = [];
   (function () {
@@ -41,6 +40,8 @@ function getSeedPoints2(lonList, latList, depthList, u, v, w) {
       depIdx = sp.depIdx;
       latIdx = sp.latIdx;
       lonIdx = sp.lonIdx;
+
+      // TODO: 計算できるかどうかの条件が糞なので直す
       if (depIdx < depthListLength - 1
        && lonIdx < lonListLength - 1
        && latIdx < latListLength - 1) {
@@ -83,12 +84,12 @@ function getSeedPoints2(lonList, latList, depthList, u, v, w) {
           // x^3 + ax^2 + bx + c = 0
           a = - v00 - v11 - v22;
           b = v00 * v11 - v10 * v01 +
-               v11 * v22 - v21 * v12 +
-               v22 * v00 - v02 * v20;
+              v11 * v22 - v21 * v12 +
+              v22 * v00 - v02 * v20;
           c = - v00 * v11 * v22 +
-                 v02 * v11 * v20 +
-                 v00 * v12 * v21 +
-                 v22 * v01 * v10;
+                v02 * v11 * v20 +
+                v00 * v12 * v21 +
+                v22 * v01 * v10;
 
           // discriminant
           // D = -4a^3c + a^2b^2 + 18abc - 4b^3 - 27c^2
@@ -98,12 +99,18 @@ function getSeedPoints2(lonList, latList, depthList, u, v, w) {
               - 4 * Math.pow(b, 3)
               - 27 * Math.pow(c, 2);
 
-          if ( D < 0 ) seedPoints.push([lonList[lonIdx], latList[latIdx], depthList[depIdx]]);
+          if ( D < 0 ) {
+            seedPoints.push({
+              "lon": lonList[lonIdx],
+              "lat": latList[latIdx],
+              "depth": depthList[depIdx]
+            });
+          }
         }
       }
     });
+    console.log("num of seedPoints: " + seedPoints.length);
   })();
-  console.log("num of seedPoints: " + seedPoints.length);
 
   return seedPoints;
 }

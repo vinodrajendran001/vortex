@@ -14,39 +14,36 @@ $(function() {
         lonList = u[0][4],
         latList = u[0][3],
         depthList = u[0][2];
-  depthList.forEach(function(depth){console.log(depth)});
     var valList = [_u, _v, _w];
-    var xIndex, // x index:0~60
-        yIndex, // y index:0~80
-        zIndex; // z index:0~30
     var IGNORE_VALUE = -999000000;
-
-    // draw(u[0][4], u[0][3], u[0][0][0][0], v[0][0][0][0], vor[1]);
 
     var pk = [-1, 1, 1, -1, -1, 1, 1, -1];
     var qk = [-1, -1, 1, 1, -1, -1, 1, 1];
     var rk = [-1, -1, -1, -1, 1, 1, 1, 1];
     var interpolate = function(lon, lat, depth) {
-      // 0<=x<=61,0<=y<=81,0<=z_index<=30
-      // 141<=lon<=147,35<=lat<=43
-      // 0.5[0]<depth<820[30]
-      var x, x0, y, y0, z, z0, z1, z_index, p, q, r;
-      z_index = -1;
+      var x, xIdx,
+          y, yIdx,
+          z, z0, z1, zIdx,
+          p, q, r;
+
+      zIdx = -1;
       x = (lon - 141) * 10;
       y = (lat - 35) * 10;
       z = depth;
-      for (var item in u[0][2]) {
-        if (depth < u[0][2][item]) {
+
+      for (var depthIdx in depthList) {
+        if (depth < depthList[depthIdx]) {
           break;
-        } // z_index is not number?
-        z_index = z_index + 1;
-        z0 = u[0][2][z_index];
+        }
+        zIdx = zIdx + 1;
+        z0 = depthList[depthIdx];
       }
-      x0 = Math.floor(x);
-      y0 = Math.floor(y);
-      z1 = u[0][2][z_index + 1];
-      p = 2 * x - x0 - (x0 + 1);
-      q = 2 * y - y0 - (y0 + 1);
+
+      xIdx = Math.floor(x);
+      yIdx = Math.floor(y);
+      z1 = depthList[zIdx + 1];
+      p = 2 * x - xIdx - (xIdx + 1);
+      q = 2 * y - yIdx - (yIdx + 1);
       r = (2 * z - z0 - z1) / (z1 - z0);
       // calculate S using p,q,r and S0`S7
 
@@ -54,45 +51,45 @@ $(function() {
         var val = valList[valNum];
         if (val == null) return;
         for (var i = 1; i >= 0; i--) {
-          if (val[z_index + i] == null) return;
+          if (val[zIdx + i] == null) return;
           for (var j = 1; j >= 0; j--) {
-            if (val[z_index + i][y0 + j] == null) return;
+            if (val[zIdx + i][yIdx + j] == null) return;
             for (var k = 1; k >= 0; k-- ) {
-              if (val[z_index + i][y0 + j][x0 + k] == null || val[z_index + i][y0 + j][x0 + k] == IGNORE_VALUE) return;
+              if (val[zIdx + i][yIdx + j][xIdx + k] == null || val[zIdx + i][yIdx + j][xIdx + k] == IGNORE_VALUE) return;
             }
           }
         }
       }
 
       var _uList = [
-        _u[z_index][y0][x0],
-        _u[z_index][y0][x0 + 1],
-        _u[z_index][y0 + 1][x0 + 1],
-        _u[z_index][y0 + 1][x0],
-        _u[z_index + 1][y0][x0],
-        _u[z_index + 1][y0][x0 + 1],
-        _u[z_index + 1][y0 + 1][x0 + 1],
-        _u[z_index + 1][y0 + 1][x0]
+        _u[zIdx][yIdx][xIdx],
+        _u[zIdx][yIdx][xIdx + 1],
+        _u[zIdx][yIdx + 1][xIdx + 1],
+        _u[zIdx][yIdx + 1][xIdx],
+        _u[zIdx + 1][yIdx][xIdx],
+        _u[zIdx + 1][yIdx][xIdx + 1],
+        _u[zIdx + 1][yIdx + 1][xIdx + 1],
+        _u[zIdx + 1][yIdx + 1][xIdx]
       ];
       var _vList = [
-        _v[z_index][y0][x0],
-        _v[z_index][y0][x0 + 1],
-        _v[z_index][y0 + 1][x0 + 1],
-        _v[z_index][y0 + 1][x0],
-        _v[z_index + 1][y0][x0],
-        _v[z_index + 1][y0][x0 + 1],
-        _v[z_index + 1][y0 + 1][x0 + 1],
-        _v[z_index + 1][y0 + 1][x0]
+        _v[zIdx][yIdx][xIdx],
+        _v[zIdx][yIdx][xIdx + 1],
+        _v[zIdx][yIdx + 1][xIdx + 1],
+        _v[zIdx][yIdx + 1][xIdx],
+        _v[zIdx + 1][yIdx][xIdx],
+        _v[zIdx + 1][yIdx][xIdx + 1],
+        _v[zIdx + 1][yIdx + 1][xIdx + 1],
+        _v[zIdx + 1][yIdx + 1][xIdx]
       ];
       var _wList = [
-        _w[z_index][y0][x0],
-        _w[z_index][y0][x0 + 1],
-        _w[z_index][y0 + 1][x0 + 1],
-        _w[z_index][y0 + 1][x0],
-        _w[z_index + 1][y0][x0],
-        _w[z_index + 1][y0][x0 + 1],
-        _w[z_index + 1][y0 + 1][x0 + 1],
-        _w[z_index + 1][y0 + 1][x0]
+        _w[zIdx][yIdx][xIdx],
+        _w[zIdx][yIdx][xIdx + 1],
+        _w[zIdx][yIdx + 1][xIdx + 1],
+        _w[zIdx][yIdx + 1][xIdx],
+        _w[zIdx + 1][yIdx][xIdx],
+        _w[zIdx + 1][yIdx][xIdx + 1],
+        _w[zIdx + 1][yIdx + 1][xIdx + 1],
+        _w[zIdx + 1][yIdx + 1][xIdx]
       ];
 
       var vx = 0, vy = 0, vz = 0;
@@ -106,10 +103,12 @@ $(function() {
 
     var k1, k2, k3, k4;
     var streamLinePoints;
-    var getStreamlinePoints = function(lon, lat, depth, n, deltaT) {
-      streamLinePoints = [[lon, lat, depth]];
+    var getStreamlinePoints = function(iniLon, iniLat, iniDepth, n, deltaT) {
+      streamLinePoints = [[iniLon, iniLat, iniDepth]];
+      var lon = iniLon,
+          lat = iniLat,
+          depth = iniDepth;
       for (var i = 0; i < n; i++) {
-        var tmpLon = lon;
         k1 = interpolate(lon, lat, depth); // x direction
         if (!k1) break;
         k2 = interpolate((lon + k1[0] * deltaT / 2), (lat + k1[1] * deltaT / 2), (depth + k1[2] * deltaT / 2));
@@ -121,18 +120,16 @@ $(function() {
         lon = lon + deltaT / 6.0 * (k1[0] + 2 * k2[0] + 2 * k3[0] + k4[0]);
         lat = lat + deltaT / 6.0 * (k1[1] + 2 * k2[1] + 2 * k3[1] + k4[1]);
         depth = depth + deltaT / 6.0 * (k1[2] + 2 * k2[2] + 2 * k3[2] + k4[2]);
-        if (depth > 500 || depth < 10) break; // 決め打ち?
         streamLinePoints.push([lon, lat, depth]);
       }
       return (streamLinePoints);
     };
 
-    var pointsofvor = getSeedPoints2(lonList, latList, depthList, _u, _v, _w),
-        p;
-    for (var i = pointsofvor.length - 1; i >= 0; i--) {
-      p = pointsofvor[i];
-      var _streamlinePoints = getStreamlinePoints(p[0], p[1], p[2], 700, 0.001);
-      if (_streamlinePoints && _streamlinePoints.length > 500) drawStreamline(_streamlinePoints);
+    var seedPoints = getSeedPoints(lonList, latList, depthList, _u, _v, _w);
+    for (var i = seedPoints.length - 1; i >= 0; i--) {
+      var sp = seedPoints[i];
+      var streamlinePoints = getStreamlinePoints(sp.lon, sp.lat, sp.depth, 700, 0.001);
+      if (streamlinePoints && streamlinePoints.length > 500) drawStreamline(streamlinePoints);
     }
   });
 });

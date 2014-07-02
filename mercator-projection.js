@@ -36,5 +36,5 @@ function yToLat(y) {
 }
 
 function mToZ (rawZ, lat) {
-  return - rawZ / 50;
+  return - rawZ / 300;
 }

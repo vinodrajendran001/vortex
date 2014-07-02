@@ -1,6 +1,6 @@
 function drawRectangle (xRange, yRange, zRange) {
   var group = new THREE.Object3D();
-  var lineMaterial = new THREE.LineBasicMaterial({ color: 0x34495e });
+  var lineMaterial = new THREE.LineBasicMaterial({ color: 0x208b20 });
   var geometry = new THREE.Geometry();
   geometry.vertices.push(new THREE.Vector3(xRange.min, yRange.min, zRange.min));
   geometry.vertices.push(new THREE.Vector3(xRange.max, yRange.min, zRange.min));

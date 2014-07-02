@@ -125,7 +125,7 @@ THREE.TrackballControls = function ( object, domElement ) {
         return function ( pageX, pageY, projection ) {
 
             mouseOnBall.set(
-                ( pageX - _this.screen.width * 0.5 - _this.screen.left ) / (_this.screen.width*.5),
+                - ( pageX - _this.screen.width * 0.5 - _this.screen.left ) / (_this.screen.width*.5),
                 ( _this.screen.height * 0.5 + _this.screen.top - pageY ) / (_this.screen.height*.5),
                 0.0
             );
